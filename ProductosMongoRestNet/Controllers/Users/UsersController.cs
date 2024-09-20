@@ -33,7 +33,17 @@ public class UsersController : ControllerBase
         };
 
         var savedUser = await _userService.CreateUserAsync(user);
-        return CreatedAtAction(nameof(Login), savedUser);
+
+        // Creamos la respuesta con el usuario creado
+        var userResponseDto = new UserResponseDto
+        {
+            Id = savedUser.Id,
+            Username = savedUser.Username,
+            Role = typeof(Role).GetEnumName(savedUser.Role),
+            CreatedAt = savedUser.CreatedAt,
+            UpdatedAt = savedUser.UpdatedAt
+        };
+        return CreatedAtAction(nameof(Login), userResponseDto);
     }
 
     [HttpPost("login")]

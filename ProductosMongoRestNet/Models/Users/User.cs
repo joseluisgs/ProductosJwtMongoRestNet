@@ -13,11 +13,10 @@ public class User
     public string Username { get; set; }
 
     // Se ignora en el JSON de salida para que no se muestre la contraseña en la lista de usuarios
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public string PasswordHash { get; set; }
 
     public Role Role { get; set; } // e.g., "Admin" or "User"
-    
+
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [BsonIgnoreIfNull]
     [JsonPropertyName("createdAt")]

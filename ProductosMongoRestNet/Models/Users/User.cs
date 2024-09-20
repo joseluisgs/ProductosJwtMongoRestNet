@@ -17,4 +17,14 @@ public class User
     public string PasswordHash { get; set; }
 
     public Role Role { get; set; } // e.g., "Admin" or "User"
+    
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [BsonIgnoreIfNull]
+    [JsonPropertyName("createdAt")]
+    public DateTime? CreatedAt { get; set; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [BsonIgnoreIfNull]
+    [JsonPropertyName("updatedAt")]
+    public DateTime? UpdatedAt { get; set; }
 }

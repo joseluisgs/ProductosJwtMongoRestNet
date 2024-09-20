@@ -4,6 +4,7 @@ using System.Text;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using ProductosMongoRestNet.Config.Database;
 
@@ -94,6 +95,11 @@ public class UsersService : IUsersService
     public async Task<Models.Users.User> CreateUserAsync(Models.Users.User user)
     {
         _logger.LogInformation("Creating user");
+        user.Id = ObjectId.GenerateNewId().ToString();
+        var timeStamp = DateTime.Now;
+        user.CreatedAt = timeStamp;
+        user.UpdatedAt = timeStamp;
+        
         await _usersCollection.InsertOneAsync(user);
         return user;
     }

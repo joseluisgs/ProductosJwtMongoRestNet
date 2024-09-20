@@ -38,7 +38,7 @@ public class UsersService : IUsersService
         _jwtConfig = jwtConfig.Value;
     }
 
-    public async Task<Models.Users.User> GetUserByUsernameAsync(string username)
+    public async Task<Models.Users.User?> GetUserByUsernameAsync(string username)
     {
         _logger.LogInformation($"Getting user with username: {username}");
         var cacheKey = CacheKeyPrefixUsername + username;
@@ -65,7 +65,7 @@ public class UsersService : IUsersService
         return user;
     }
 
-    public async Task<Models.Users.User> GetUserByIdAsync(string id)
+    public async Task<Models.Users.User?> GetUserByIdAsync(string id)
     {
         _logger.LogInformation($"Getting user with id: {id}");
         var cacheKey = CacheKeyPrefixId + id;
@@ -99,7 +99,7 @@ public class UsersService : IUsersService
         var timeStamp = DateTime.Now;
         user.CreatedAt = timeStamp;
         user.UpdatedAt = timeStamp;
-        
+
         await _usersCollection.InsertOneAsync(user);
         return user;
     }

@@ -1,4 +1,6 @@
 using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using ProductosMongoRestNet.Config.Storage;
@@ -34,10 +36,11 @@ if (app.Environment.IsDevelopment())
 // Usamos HTTPS redirection
 app.UseHttpsRedirection();
 
-// Habilitamos el middleware de Autorización
-app.UseAuthorization();
-
 app.UseRouting(); // Habilitamos el middleware de enrutamiento
+
+// Habilitamos el middleware de Autorización y Autorización JWT
+app.UseAuthentication();
+app.UseAuthorization();
 
 // Mapeamos los controladores a la aplicación
 app.MapControllers();
@@ -71,6 +74,35 @@ WebApplicationBuilder InitServices()
     myBuilder.Services.Configure<BookStoreMongoConfig>(
         myBuilder.Configuration.GetSection("BookStoreDatabase"));
     TryConnectionDataBase(); // Intentamos conectar a la base de datos
+
+    // Configura la Autenticación de JWT
+    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]));
+    myBuilder.Services.AddAuthentication(x =>
+    {
+        x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    }).AddJwtBearer(x =>
+    {
+        x.RequireHttpsMetadata = false;
+        x.SaveToken = true;
+        x.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = configuration["Jwt:Issuer"],
+            ValidAudience = configuration["Jwt:Audience"],
+            IssuerSigningKey = key
+        };
+    });
+
+    // Configura la Autenticación con politicas de seguridad, en este caso admin
+    myBuilder.Services.AddAuthorization(options =>
+    {
+        options.AddPolicy("AdminPolicy", policy => policy.RequireRole("Admin"));
+    });
+
 
     // Cache en memoria
     myBuilder.Services.AddMemoryCache();

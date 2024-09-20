@@ -26,3 +26,4 @@ Mongo esta en Mongo Atlas, por lo que la cadena de conexión es un poco diferent
 - Microsoft.AspNetCore.Authentication.JwtBearer
 - Microsoft.IdentityModel.JsonWebTokens
 - BCrypt.Net-Next
+

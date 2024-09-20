@@ -18,14 +18,14 @@ public class UsersService : IUsersService
     private const string
         CacheKeyPrefixId = "UserId_"; //Para evitar colisiones en la caché de memoria con otros elementos
 
-    private readonly JwtConfig _jwtConfig;
+    private readonly AuthJwtConfig _authJwtConfig;
 
     private readonly ILogger _logger;
     private readonly IMemoryCache _memoryCache;
     private readonly IMongoCollection<Models.Users.User> _usersCollection; // o Modelo O Documento de MongoDB
 
     public UsersService(IOptions<BookStoreMongoConfig> bookStoreDatabaseSettings,
-        IOptions<JwtConfig> jwtConfig,
+        IOptions<AuthJwtConfig> jwtConfig,
         ILogger<UsersService> logger,
         IMemoryCache memoryCache)
     {
@@ -35,7 +35,7 @@ public class UsersService : IUsersService
         var mongoDatabase = mongoClient.GetDatabase(bookStoreDatabaseSettings.Value.DatabaseName);
         _usersCollection =
             mongoDatabase.GetCollection<Models.Users.User>(bookStoreDatabaseSettings.Value.UsersCollectionName);
-        _jwtConfig = jwtConfig.Value;
+        _authJwtConfig = jwtConfig.Value;
     }
 
     public async Task<Models.Users.User?> GetUserByUsernameAsync(string username)
@@ -107,7 +107,7 @@ public class UsersService : IUsersService
     public string GenerateJwtToken(Models.Users.User user)
     {
         _logger.LogInformation("Generating JWT token");
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtConfig.Key));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_authJwtConfig.Key));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var claims = new[]
@@ -117,10 +117,10 @@ public class UsersService : IUsersService
         };
 
         var token = new JwtSecurityToken(
-            _jwtConfig.Issuer,
-            _jwtConfig.Audience,
+            _authJwtConfig.Issuer,
+            _authJwtConfig.Audience,
             claims,
-            expires: DateTime.Now.AddMinutes(Convert.ToDouble(_jwtConfig.ExpiresInMinutes)),
+            expires: DateTime.Now.AddMinutes(Convert.ToDouble(_authJwtConfig.ExpiresInMinutes)),
             signingCredentials: creds);
 
         return new JwtSecurityTokenHandler().WriteToken(token);

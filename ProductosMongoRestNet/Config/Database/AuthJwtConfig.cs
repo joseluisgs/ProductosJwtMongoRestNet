@@ -1,6 +1,6 @@
 ﻿namespace ProductosMongoRestNet.Config.Database;
 
-public class JwtConfig
+public class AuthJwtConfig
 {
     public string Key { get; set; } = string.Empty;
     public string Issuer { get; set; } = string.Empty;

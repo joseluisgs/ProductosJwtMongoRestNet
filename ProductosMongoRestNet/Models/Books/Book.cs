@@ -2,7 +2,7 @@
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
-namespace ProductosMongoRestNet.Models;
+namespace ProductosMongoRestNet.Models.Books;
 
 public class Book
 {
@@ -20,9 +20,18 @@ public class Book
 
     public string Author { get; set; } = null!;
 
-    [JsonPropertyName("createdAt")] 
+    [JsonIgnore(Condition =
+        JsonIgnoreCondition.WhenWritingNull)] // Esto indica que si el campo es null no se incluirá en la respuesta
+    [BsonIgnoreIfNull] // Esto indica que si el campo es null no se incluirá en la colección
+    public string? Image { get; set; } = null!;
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [BsonIgnoreIfNull]
+    [JsonPropertyName("createdAt")]
     public DateTime? CreatedAt { get; set; }
 
-    [JsonPropertyName("updatedAt")] 
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [BsonIgnoreIfNull]
+    [JsonPropertyName("updatedAt")]
     public DateTime? UpdatedAt { get; set; }
 }

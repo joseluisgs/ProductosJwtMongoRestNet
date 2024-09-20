@@ -1,6 +1,6 @@
-﻿using ProductosMongoRestNet.Models;
+﻿using ProductosMongoRestNet.Models.Books;
 
-namespace ProductosMongoRestNet.Services;
+namespace ProductosMongoRestNet.Services.Books;
 
 public interface IBooksService
 {

@@ -3,10 +3,11 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using ProductosMongoRestNet.Config.Database;
 using ProductosMongoRestNet.Config.Storage;
-using ProductosMongoRestNet.Database;
-using ProductosMongoRestNet.Services;
+using ProductosMongoRestNet.Services.Books;
 using ProductosMongoRestNet.Services.Storage;
+using ProductosMongoRestNet.Services.User;
 using Serilog;
 using Serilog.Core;
 
@@ -122,6 +123,9 @@ WebApplicationBuilder InitServices()
 
     // Servicios de storage
     myBuilder.Services.AddSingleton<IFileStorageService, FileStorageService>();
+
+    // Servicios de usuarios
+    myBuilder.Services.AddSingleton<IUsersService, UsersService>();
 
 
     // Añadimos los controladores

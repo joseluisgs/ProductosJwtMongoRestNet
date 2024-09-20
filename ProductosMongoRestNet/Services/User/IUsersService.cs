@@ -2,7 +2,7 @@
 
 public interface IUsersService
 {
-    Task<Models.User> GetUserByUsernameAsync(string username);
-    Task<Models.User> GetUserByIdAsync(string id);
-    Task<Models.User> CreateUserAsync(Models.User user);
+    Task<Models.Users.User> GetUserByUsernameAsync(string username);
+    Task<Models.Users.User> GetUserByIdAsync(string id);
+    Task<Models.Users.User> CreateUserAsync(Models.Users.User user);
 }

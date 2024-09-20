@@ -1,4 +1,4 @@
-﻿namespace ProductosMongoRestNet.Models;
+﻿namespace ProductosMongoRestNet.Models.Users;
 
 public enum Role
 {

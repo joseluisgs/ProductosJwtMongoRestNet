@@ -2,10 +2,10 @@
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
-using ProductosMongoRestNet.Database;
-using ProductosMongoRestNet.Models;
+using ProductosMongoRestNet.Config.Database;
+using ProductosMongoRestNet.Models.Books;
 
-namespace ProductosMongoRestNet.Services;
+namespace ProductosMongoRestNet.Services.Books;
 
 public class BooksService : IBooksService
 {

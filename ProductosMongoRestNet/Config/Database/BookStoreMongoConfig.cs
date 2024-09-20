@@ -1,7 +1,4 @@
-﻿using MongoDB.Bson;
-using MongoDB.Driver;
-
-namespace ProductosMongoRestNet.Database;
+﻿namespace ProductosMongoRestNet.Config.Database;
 
 public class BookStoreMongoConfig
 {
@@ -23,5 +20,4 @@ public class BookStoreMongoConfig
     public string DatabaseName { get; set; } = string.Empty;
     public string BooksCollectionName { get; set; } = string.Empty;
     public string UsersCollectionName { get; set; } = string.Empty;
-    
 }

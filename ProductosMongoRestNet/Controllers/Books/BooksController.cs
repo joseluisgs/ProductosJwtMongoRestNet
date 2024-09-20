@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using ProductosMongoRestNet.Models.Books;
 using ProductosMongoRestNet.Services.Books;
 using ProductosMongoRestNet.Services.Storage;
@@ -38,6 +39,7 @@ public class BooksController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize] // Solo los usuarios autenticados pueden crear libros
     public async Task<ActionResult<Book>> Create(Book book)
     {
         var savedBook = await _booksService.CreateAsync(book);
@@ -45,6 +47,7 @@ public class BooksController : ControllerBase
     }
 
     [HttpPut("{id:length(24)}")]
+    [Authorize] // Solo los usuarios autenticados pueden actualizar libros
     public async Task<ActionResult> Update(
         string id,
         [FromBody] Book book)
@@ -57,6 +60,7 @@ public class BooksController : ControllerBase
     }
 
     [HttpDelete("{id:length(24)}")]
+    [Authorize(Policy = "AdminPolicy")] // Solo los usuarios con el rol "Admin" pueden eliminar libros
     public async Task<ActionResult> Delete(string id)
     {
         var deletedBook = await _booksService.DeleteAsync(id);

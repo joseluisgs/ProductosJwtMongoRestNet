@@ -77,7 +77,12 @@ WebApplicationBuilder InitServices()
     TryConnectionDataBase(); // Intentamos conectar a la base de datos
 
     // Configura la Autenticación de JWT
-    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]));
+    var confiKey = configuration.GetSection("Jwt").Get<JwtConfig>();
+    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(confiKey.Key));
+    // Cargamos esta configuración para poder inyectarla porque la vamos a necesitar en el servicio
+    myBuilder.Services.Configure<JwtConfig>(
+        myBuilder.Configuration.GetSection("Jwt"));
+    // Configuramos la autenticación con JWT
     myBuilder.Services.AddAuthentication(x =>
     {
         x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;

@@ -1,5 +1,9 @@
-﻿using Microsoft.Extensions.Caching.Memory;
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver;
 using ProductosMongoRestNet.Config.Database;
 
@@ -13,11 +17,15 @@ public class UsersService : IUsersService
     private const string
         CacheKeyPrefixId = "UserId_"; //Para evitar colisiones en la caché de memoria con otros elementos
 
+    private readonly JwtConfig _jwtConfig;
+
     private readonly ILogger _logger;
     private readonly IMemoryCache _memoryCache;
     private readonly IMongoCollection<Models.Users.User> _usersCollection; // o Modelo O Documento de MongoDB
 
-    public UsersService(IOptions<BookStoreMongoConfig> bookStoreDatabaseSettings, ILogger<UsersService> logger,
+    public UsersService(IOptions<BookStoreMongoConfig> bookStoreDatabaseSettings,
+        IOptions<JwtConfig> jwtConfig,
+        ILogger<UsersService> logger,
         IMemoryCache memoryCache)
     {
         _logger = logger;
@@ -26,6 +34,7 @@ public class UsersService : IUsersService
         var mongoDatabase = mongoClient.GetDatabase(bookStoreDatabaseSettings.Value.DatabaseName);
         _usersCollection =
             mongoDatabase.GetCollection<Models.Users.User>(bookStoreDatabaseSettings.Value.UsersCollectionName);
+        _jwtConfig = jwtConfig.Value;
     }
 
     public async Task<Models.Users.User> GetUserByUsernameAsync(string username)
@@ -87,5 +96,27 @@ public class UsersService : IUsersService
         _logger.LogInformation("Creating user");
         await _usersCollection.InsertOneAsync(user);
         return user;
+    }
+
+    public string GenerateJwtToken(Models.Users.User user)
+    {
+        _logger.LogInformation("Generating JWT token");
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtConfig.Key));
+        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+        var claims = new[]
+        {
+            new Claim(ClaimTypes.Name, user.Username),
+            new Claim(ClaimTypes.Role, user.Role.ToString())
+        };
+
+        var token = new JwtSecurityToken(
+            _jwtConfig.Issuer,
+            _jwtConfig.Audience,
+            claims,
+            expires: DateTime.Now.AddMinutes(Convert.ToDouble(_jwtConfig.ExpiresInMinutes)),
+            signingCredentials: creds);
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
     }
 }

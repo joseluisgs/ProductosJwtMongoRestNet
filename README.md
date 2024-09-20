@@ -40,10 +40,14 @@ El middleware de autorización en ASP.NET Core se encarga de autenticar y autori
 
 - Autorización: La autorización determina si un usuario autenticado tiene permisos para realizar una acción específica. En ASP.NET Core, esto se hace evaluando los claims presentes en el token JWT contra las políticas y roles definidos en tu aplicación.
 
+Por defecto haremos: `Petición -> Middleware de autenticación -> Middleware de autorización -> Controlador -> Respuesta`
+
 
 ## Opción A: con políticas de autenticación y autorización (TAG V1.0)
 
-Lo primero es crear y configurar los servicios de JWT Authenticaction y de Authorization
+Lo primero es crear y configurar los servicios de JWT Authenticaction y de Authorization. Nuestro objetivo es conseguir:
+
+`Petición -> Middleware de autenticación -> Middleware de autorización -> Controlador -> Respuesta`
 
 ```csharp
  // Configura la Autenticación de JWT
@@ -136,12 +140,98 @@ public class BooksController : ControllerBase
 
 ## Opción B: con políticas de autenticación y autorización basado en un middleware para que no haya información sensible
 
-Vamos a quitar del token el rol, y crear un middleware que lo incluya en el contexto de la aplicación.
+Vamos a quitar del token el rol, y crear un middleware que lo incluya el rol en el contexto de la aplicación. Este si situará entre el middleware de autenticación y el de autorización.
 ¿Qué es un middleware? Un middleware es un componente de software que se encuentra entre una aplicación cliente y el servidor. En este caso, el middleware se encuentra entre la solicitud HTTP y la aplicación ASP.NET Core. El objetivo de un middleware es procesar la solicitud entrante y, opcionalmente, modificar la respuesta saliente.
 
+Nuestro objetivo es conseguir: `Petición -> Middleware de autenticación -> Middleware de Rol -> Middleware de autorización -> Controlador -> Respuesta`
 
+El primer paso es quitar de la generación del token los datos sensibles, en este caso el rol
+```csharp
+public string GenerateJwtToken(Models.Users.User user)
+    {
+        _logger.LogInformation("Generating JWT token");
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_authJwtConfig.Key));
+        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
+        var claims = new[]
+        {
+            // Aquí puedes añadir los claims que necesites
+            // new Claim(ClaimTypes.Name, user.Username),
+            // Vamos a evitar un dato sensible como el rol, y solo vamos a enviar el id o el username
+            //new Claim(ClaimTypes.Role, typeof(Role).GetEnumName(user.Role)) // El nombre del rol es el nombre del enum
+            new Claim("UserId", user.Id) // Más aseptico al enviar el id del usuario
+        };
 
+        var token = new JwtSecurityToken(
+            _authJwtConfig.Issuer,
+            _authJwtConfig.Audience,
+            claims,
+            expires: DateTime.Now.AddMinutes(Convert.ToDouble(_authJwtConfig.ExpiresInMinutes)),
+            signingCredentials: creds);
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+```	
+
+El siguiente paso es hacer el middleware que se encargue de añadir el rol al contexto de la aplicación usando el id del usuario o el username
+```csharp
+public class RoleMiddleware
+{
+    private readonly ILogger _logger;
+    private readonly RequestDelegate _next;
+    private readonly IUsersService _userService;
+
+    public RoleMiddleware(RequestDelegate next, IUsersService userService, ILogger<RoleMiddleware> logger)
+    {
+        _next = next;
+        _userService = userService;
+        _logger = logger;
+    }
+
+    // Método para gestionar la petición
+    public async Task InvokeAsync(HttpContext context)
+    {
+        // Si el usuario está autenticado
+        if (context.User.Identity.IsAuthenticated)
+        {
+            _logger.LogDebug("User is authenticated");
+            // Obtenemos los datos de los claims del token (Mira el método GenerateJwtToken en UsersService)
+            var userId = context.User.FindFirst("UserId")?.Value;
+            //var username = context.User.Identity.Name ?? string.Empty;
+
+            // Buscamos el usuario por el id
+            var user = await _userService.GetUserByIdAsync(userId);
+            // Buscamos el usuario por el nombre de usuario
+            //var user = await _userService.GetUserByUsernameAsync(username);
+
+            // Si el usuario existe
+            if (user != null)
+            {
+                _logger.LogDebug("User found, adding roles to claims");
+                // Añadimos los roles del usuario a los claims
+                var claims = new List<Claim>
+                {
+                    // Añadir claims con el role que es lo que necesitamos para el middleware de autorización
+                    // new(ClaimTypes.Name, user.Username),
+                    new("UserId", user.Id),
+                    new(ClaimTypes.Role, typeof(Role).GetEnumName(user.Role)) // Añadir roles
+                };
+
+                // Creamos la identidad con los claims
+                var identity = new ClaimsIdentity(claims, "custom");
+
+                // Añadimos la identidad al usuario al contexto de la petición
+                _logger.LogDebug("Adding identity to user");
+                context.User.AddIdentity(identity);
+            }
+        }
+
+        _logger.LogInformation("Invoking next middleware");
+        // Pasamos la petición al siguiente middleware o controlador
+        await _next(context);
+    }
+}
+```
 
 
 

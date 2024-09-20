@@ -9,6 +9,7 @@ Ejemplo de una API REST básica en .NET Core 8 con MongoDB y JWT para autenticac
   - [Librerías usadas](#librerías-usadas)
   - [Como funciona](#como-funciona)
   - [Opción A: con políticas de autenticación y autorización (TAG V1.0)](#opción-a-con-políticas-de-autenticación-y-autorización-tag-v10)
+  - [Opción B: con políticas de autenticación y autorización basado en un middleware para que no haya información sensible](#opción-b-con-políticas-de-autenticación-y-autorización-basado-en-un-middleware-para-que-no-haya-información-sensible)
   - [Aumentar la seguridad](#aumentar-la-seguridad)
 
 
@@ -132,6 +133,17 @@ public class BooksController : ControllerBase
     public IActionResult DeleteBook(string id) { /*...*/ }
 }
 ```
+
+## Opción B: con políticas de autenticación y autorización basado en un middleware para que no haya información sensible
+
+Vamos a quitar del token el rol, y crear un middleware que lo incluya en el contexto de la aplicación.
+¿Qué es un middleware? Un middleware es un componente de software que se encuentra entre una aplicación cliente y el servidor. En este caso, el middleware se encuentra entre la solicitud HTTP y la aplicación ASP.NET Core. El objetivo de un middleware es procesar la solicitud entrante y, opcionalmente, modificar la respuesta saliente.
+
+
+
+
+
+
 
 ## Aumentar la seguridad
 

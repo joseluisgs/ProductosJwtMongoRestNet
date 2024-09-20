@@ -53,7 +53,7 @@ public class UsersController : ControllerBase
         var user = await _userService.GetUserByUsernameAsync(userDto.Username);
         // Si el usuario no existe o la contraseña no es correcta, devolvemos Unauthorized
         if (user == null || !BCrypt.Net.BCrypt.Verify(userDto.Password, user.PasswordHash))
-            return Unauthorized();
+            return Unauthorized("Invalid username or password");
 
         var token = _userService.GenerateJwtToken(user);
 

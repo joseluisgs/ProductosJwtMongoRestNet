@@ -95,7 +95,10 @@ public class BooksController : ControllerBase
         }
     }
 
-    [HttpPatch("{id:length(24)}")]
+    [RequestSizeLimit(10_000_000)] // Limitamos el tamaño del fichero a 10MB
+    [Consumes("multipart/form-data")] // Necesitamos especificar que el tipo de contenido es multipart/form-data para subir el fichero
+    [HttpPut("image/{id:length(24)}")]
+    [Authorize(Policy = "AdminPolicy")] // Solo los usuarios admin pueden actualizar la imagen del libro
     public async Task<ActionResult> UpdateImage(
         string id,
         [FromForm] IFormFile file)

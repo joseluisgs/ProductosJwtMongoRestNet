@@ -7,7 +7,6 @@ using Microsoft.IdentityModel.Tokens;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using ProductosMongoRestNet.Config.Database;
-using ProductosMongoRestNet.Models.Users;
 
 namespace ProductosMongoRestNet.Services.User;
 
@@ -114,8 +113,10 @@ public class UsersService : IUsersService
         var claims = new[]
         {
             // Aquí puedes añadir los claims que necesites
-            new Claim(ClaimTypes.Name, user.Username),
-            new Claim(ClaimTypes.Role, typeof(Role).GetEnumName(user.Role)) // El nombre del rol es el nombre del enum
+            // new Claim(ClaimTypes.Name, user.Username),
+            // Vamos a evitar un dato sensible como el rol, y solo vamos a enviar el id o el username
+            //new Claim(ClaimTypes.Role, typeof(Role).GetEnumName(user.Role)) // El nombre del rol es el nombre del enum
+            new Claim("UserId", user.Id) // Más aseptico al enviar el id del usuario
         };
 
         var token = new JwtSecurityToken(

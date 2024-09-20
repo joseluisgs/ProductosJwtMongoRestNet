@@ -5,6 +5,7 @@ using MongoDB.Bson;
 using MongoDB.Driver;
 using ProductosMongoRestNet.Config.Database;
 using ProductosMongoRestNet.Config.Storage;
+using ProductosMongoRestNet.Middleware;
 using ProductosMongoRestNet.Services.Books;
 using ProductosMongoRestNet.Services.Storage;
 using ProductosMongoRestNet.Services.User;
@@ -41,7 +42,10 @@ app.UseRouting(); // Habilitamos el middleware de enrutamiento
 
 // Habilitamos el middleware de Autorización y Autorización JWT
 app.UseAuthentication();
+// Middleware para gestionar los roles de los usuarios
+app.UseMiddleware<RoleMiddleware>(); // Añadir middleware de roles, hay que meterlo en el pipeline antes de la autorización y después de la autenticación
 app.UseAuthorization();
+
 
 // Mapeamos los controladores a la aplicación
 app.MapControllers();

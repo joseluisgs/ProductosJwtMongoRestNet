@@ -233,7 +233,14 @@ public class RoleMiddleware
 }
 ```
 
-
+Obviamente el middleware debe ser añadido en el pipeline de la aplicación entre el middleware de autenticación y el de autorización
+```csharp
+// Habilitamos el middleware de Autorización y Autorización JWT
+app.UseAuthentication();
+// Middleware para gestionar los roles de los usuarios
+app.UseMiddleware<RoleMiddleware>(); // Añadir middleware de roles, hay que meterlo en el pipeline antes de la autorización y después de la autenticación
+app.UseAuthorization();
+```	
 
 ## Aumentar la seguridad
 
